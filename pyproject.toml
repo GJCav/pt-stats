@@ -6,11 +6,11 @@ dependencies = [
     "peewee>=3.18.3,<4", 
     "qbittorrent-api>=2025.11.1,<2026", 
     "pydantic>=2.12.5,<3", 
-    "marimo>=0.18.4,<1",
+    "marimo>=0.18.4,<1", "attrs>=25.4.0,<26", "python-dotenv>=1.2.1,<2", "furl>=2.1.4,<3", "torf>=4.3.0,<5",
 ]
 name = "pt-stats"
 requires-python = ">= 3.11"
-version = "0.1.0"
+version = "0.2.0"
 
 [build-system]
 build-backend = "hatchling.build"
