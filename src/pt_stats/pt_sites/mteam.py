@@ -13,6 +13,7 @@ from .base import (
 )
 from .utils import localize2utc, Throttle
 from pydantic import (
+    BeforeValidator,
     Field, 
     AliasPath,
     AfterValidator
@@ -51,7 +52,7 @@ class MTeamTorrentInfoFromSearch(TorrentInfo):
     leechers: int = Field(validation_alias=AliasPath("status", "leechers"))
     
     # additional properties
-    small_descr: str = Field(validation_alias="smallDescr")
+    small_descr: Annotated[str, BeforeValidator(lambda x: x or "")] = Field(validation_alias="smallDescr")
     discount: str = Field(validation_alias=AliasPath("status", "discount"))
     discount_end_time: datetime | None = Field(
         validation_alias=AliasPath("status", "discountEndTime")
