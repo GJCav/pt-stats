@@ -114,19 +114,19 @@ async def add_torrent_and_verify(torrent_meta_bytes: bytes, torrent_hash: str, t
     if not torrent_hash:
         raise ValueError("Empty torrent hash provided.")
     
+    res = qbt.torrents_add(
+        torrent_files=torrent_meta_bytes,
+        upload_limit=QBIT_UPLOAD_LIMIT,
+        download_limit=QBIT_DOWNLOAD_LIMIT,
+        category=QBIT_SET_CATEGORY
+    )
+    ## The API may return 'Fails.' even when it actually succeeds.
+    ## So we comment out this check and verify by querying the torrent list instead.
+    # if res != 'Ok.':
+    #     raise RuntimeError(f"qbt.torrents_add failed, error message: {res}")
+    
     elapsed = 0
     while elapsed < timeout:
-        res = qbt.torrents_add(
-            torrent_files=torrent_meta_bytes,
-            upload_limit=QBIT_UPLOAD_LIMIT,
-            download_limit=QBIT_DOWNLOAD_LIMIT,
-            category=QBIT_SET_CATEGORY
-        )
-        ## The API may return 'Fails.' even when it actually succeeds.
-        ## So we comment out this check and verify by querying the torrent list instead.
-        # if res != 'Ok.':
-        #     raise RuntimeError(f"qbt.torrents_add failed, error message: {res}")
-        
         # Verify if the torrent is added
         torrents = qbt.torrents_info(torrent_hashes=torrent_hash)
         if not torrents:
