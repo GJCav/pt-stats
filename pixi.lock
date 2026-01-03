@@ -40,6 +40,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/67/ff/f6b948ca32e4f2a4576aa129d8bed61f2e0543bf9f5f2b7fc3758ed005c9/charset_normalizer-3.4.4-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8b/28/03f9b8fbf396b3f2eaf65a7ff441ba2fb7dd397109d563a4e556dc5b3efb/cyclopts-4.4.3-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/f2/f2/728f041460f1b9739b85ee23b45fa5a505962ea11fd85bdbe2a02b021373/darkdetect-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/55/e2/2537ebcff11c1ee1ff17d8d0b6f4db75873e3b0fb32c2d4a2ee31ecb310a/docstring_parser-0.17.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/f3/a6858d147ed2645c095d11dc2440f94a5f1cd8f4df888e3377e6b5281a0f/fastapi-0.127.1-py3-none-any.whl
@@ -116,6 +117,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8b/28/03f9b8fbf396b3f2eaf65a7ff441ba2fb7dd397109d563a4e556dc5b3efb/cyclopts-4.4.3-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/f2/f2/728f041460f1b9739b85ee23b45fa5a505962ea11fd85bdbe2a02b021373/darkdetect-0.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/55/e2/2537ebcff11c1ee1ff17d8d0b6f4db75873e3b0fb32c2d4a2ee31ecb310a/docstring_parser-0.17.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/02/10/5da547df7a391dcde17f59520a231527b8571e6f46fc8efb02ccb370ab12/docutils-0.22.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d2/f3/a6858d147ed2645c095d11dc2440f94a5f1cd8f4df888e3377e6b5281a0f/fastapi-0.127.1-py3-none-any.whl
@@ -349,6 +351,13 @@ packages:
   - trio>=0.10.0 ; extra == 'trio'
   - pyyaml>=6.0.1 ; extra == 'yaml'
   requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/f2/f2/728f041460f1b9739b85ee23b45fa5a505962ea11fd85bdbe2a02b021373/darkdetect-0.8.0-py3-none-any.whl
+  name: darkdetect
+  version: 0.8.0
+  sha256: a7509ccf517eaad92b31c214f593dbcf138ea8a43b2935406bbd565e15527a85
+  requires_dist:
+  - pyobjc-framework-cocoa ; sys_platform == 'darwin' and extra == 'macos-listener'
+  requires_python: '>=3.6'
 - pypi: https://files.pythonhosted.org/packages/55/e2/2537ebcff11c1ee1ff17d8d0b6f4db75873e3b0fb32c2d4a2ee31ecb310a/docstring_parser-0.17.0-py3-none-any.whl
   name: docstring-parser
   version: 0.17.0
@@ -1008,7 +1017,7 @@ packages:
 - pypi: ./
   name: pt-stats
   version: 0.3.0
-  sha256: 883365ab9b82f4f1a002a97e94f630d992e649451812e0c7c21e5bdd8ff2149a
+  sha256: 98b5389bf4e74af4767da0f8dd54c5bab12e69398a6daa3deff741ab33451372
   requires_dist:
   - fastapi>=0.127.1,<1
   - httpx>=0.28.1,<1
@@ -1026,6 +1035,7 @@ packages:
   - humanize>=4.15.0,<5
   - rich>=14.2.0,<15
   - apscheduler>=3.11.2,<4
+  - darkdetect>=0.8.0,<0.9
   requires_python: '>=3.11'
   editable: true
 - pypi: https://files.pythonhosted.org/packages/5a/87/b70ad306ebb6f9b585f114d0ac2137d792b48be34d732d60e597c2f8465a/pydantic-2.12.5-py3-none-any.whl

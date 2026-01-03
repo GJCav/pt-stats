@@ -14,7 +14,10 @@ dependencies = [
     "torf>=4.3.0,<5", 
     "ruamel-yaml>=0.18.17,<0.19",
     "cyclopts", 
-    "humanize>=4.15.0,<5", "rich>=14.2.0,<15", "apscheduler>=3.11.2,<4",
+    "humanize>=4.15.0,<5", 
+    "rich>=14.2.0,<15", 
+    "apscheduler>=3.11.2,<4", 
+    "darkdetect>=0.8.0,<0.9",
 ]
 name = "pt-stats"
 requires-python = ">= 3.11"

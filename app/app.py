@@ -4,7 +4,7 @@ from pt_stats.pt_sites.mteam import MTeamTorrentInfoFromSearch
 from settings import load_settings, AppSettings
 import sys
 from cyclopts import App as CliApp, Parameter
-from typing import Annotated
+from typing import Annotated, Literal
 import attrs
 from qbittorrentapi import Client as QbtClient
 import qbittorrentapi as qbt_types
@@ -109,10 +109,32 @@ def prune(
 
 @cli_setting.command()
 def template(
-    no_comments: Annotated[bool, Parameter(name=["--no-comments", '-n'], help="Do not include comments in the generated template")] = False
+    no_comments: Annotated[bool, Parameter(name=["--no-comments", '-n'], help="Do not include comments in the generated template")] = False,
+    theme: Annotated[
+        Literal['auto', 'dark', 'light'], 
+        Parameter(name=["--theme", '-t'], help="Syntax highlighting theme to use")
+    ] = "auto"
 ):
     """Generate the settings template to stdout."""
-    AppSettings().to_yaml(sys.stdout, fill_default_comments=not no_comments)
+    import io
+    from rich.syntax import Syntax
+    import darkdetect
+    
+    buf = io.StringIO()
+    AppSettings().to_yaml(buf, fill_default_comments=not no_comments)
+    
+    if theme == "auto":
+        theme = "dark" if darkdetect.isDark() else "light"
+    
+    if theme == "dark":
+        theme = "github-dark" # type: ignore
+    elif theme == "light":
+        theme = "staroffice" # type: ignore
+    
+    syntax = Syntax(buf.getvalue(), "yaml", theme=theme)
+    
+    console = Console()
+    console.print(syntax)
 
 
 @cli_setting.command()
