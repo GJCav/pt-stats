@@ -3,15 +3,16 @@ import peewee
 from pt_stats.pt_sites.mteam import MTeamTorrentInfoFromSearch
 from settings import load_settings, AppSettings
 import sys
+import cyclopts
 from cyclopts import App as CliApp, Parameter
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal, Protocol
 import attrs
 from qbittorrentapi import Client as QbtClient
 import qbittorrentapi as qbt_types
 import torf
 import asyncio as aio
 from pt_stats.pt_sites import MTeamClient
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 import pt_stats.db as db
 import pt_stats.db.models as db_schemas
 from utils import naturalsize, shorten, utc_now
@@ -19,10 +20,15 @@ from rich.table import Table as RichTable
 from rich.console import Console
 from rich.progress import track
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import pendulum
 
 cli = CliApp("pt-stats")
+
 cli_setting = CliApp("settings", help="Manage application settings")
 cli.command(cli_setting)
+
+cli_report = CliApp("report", help="Report statistics about the torrents")
+cli.command(cli_report)
 
 @cli.default
 def print_help():
@@ -156,6 +162,105 @@ def show(
     settings = load_settings(path)
     settings.to_yaml(sys.stdout, enable_comments=comments)
 
+
+@cli_report.command()
+def transfer(
+    minutes: Annotated[
+        int,
+        Parameter(
+            name=["--minutes", '-m'],
+            help="Number of minutes to look back for transfer calculation",
+            group="Lookback"
+        ),
+    ] = 0,
+    hours: Annotated[
+        int,
+        Parameter(
+            name=["--hours", '-H'],
+            help="Number of hours to look back for transfer calculation",
+            group="Lookback"
+        ),
+    ] = 0,
+    days: Annotated[
+        int, 
+        Parameter(
+            name=["--days", '-d'], 
+            help="Number of days to look back for transfer calculation",
+            group="Lookback"
+        ),
+    ] = 1,
+    
+    start: Annotated[
+        datetime,
+        Parameter(
+            name=["--start", '-s'],
+            help="Start datetime for transfer calculation",
+            group="Duration",
+        ),
+    ] = utc_now() - timedelta(days=1),
+    end: Annotated[
+        datetime,
+        Parameter(
+            name=["--end", '-e'],
+            help="End datetime for transfer calculation",
+            group="Duration",
+        ),
+    ] = utc_now(),
+):
+    settings = load_settings("settings.yaml")
+    app = App.create(settings)
+    
+    if minutes > 0 or hours > 0 or days > 0:
+        delta = timedelta(days=days, hours=hours, minutes=minutes)
+        end = utc_now()
+        start = end - delta
+        
+    if start.tzinfo is None:
+        start = start.replace(tzinfo=pendulum.local_timezone())
+    if end.tzinfo is None:
+        end = end.replace(tzinfo=pendulum.local_timezone())
+    
+    print("Calculating transfer deltas from:")
+    print(f"Start:    {start.astimezone(pendulum.local_timezone()).isoformat()}")
+    print(f"End:      {end.astimezone(pendulum.local_timezone()).isoformat()}")
+    print(f"Duration: {end - start}")
+    
+    start = start.astimezone(timezone.utc)
+    end = end.astimezone(timezone.utc)
+    
+    result = app.calc_transfer_deltas(start=start, end=end)
+    
+    table = RichTable(
+        title="Transfer Statistics for Torrents",
+    )
+    table.add_column("Hash", overflow='ellipsis', max_width=12, no_wrap=True)
+    table.add_column("Down")
+    table.add_column("Up")
+    table.add_column("Ratio")
+    table.add_column("Name", overflow='ellipsis', max_width=48, no_wrap=True)
+    
+    for t in result:
+        down = t.downloaded_delta
+        up = t.uploaded_delta
+        ratio = (up / down) if down > 0 else (float('inf') if up > 0 else 0.0)
+        
+        table.add_row(
+            t.torrent_hash,
+            naturalsize(down),
+            naturalsize(up),
+            f"{ratio:.1f}" if ratio != float('inf') else "∞",
+            t.name
+        )
+    console = Console()
+    console.print(table)
+    
+    accu_down = sum(t.downloaded_delta for t in result)
+    accu_up = sum(t.uploaded_delta for t in result)
+    accu_ratio = (accu_up / accu_down) if accu_down > 0 else (float('inf') if accu_up > 0 else 0.0)
+    print("\n=== Accumulated Transfer Statistics ===")
+    print(f"Total Downloaded: {naturalsize(accu_down)}")
+    print(f"Total Uploaded:   {naturalsize(accu_up)}")
+    print(f"Overall Ratio:    {accu_ratio:.1f}")
 
 #####
 
@@ -513,6 +618,84 @@ class App:
             db_schemas.Torrents.delete_time.is_null()
         ).scalar()
         return total or 0
+    
+    
+    def calc_transfer_deltas(self, start: datetime, end: datetime) -> list[Any]:
+        """
+        Calculate the transfer deltas (uploaded and downloaded bytes) for
+        torrents between the given start and end times.
+        
+        Returns a list of Torrents with additional attributes:
+            - uploaded_delta: int
+            - downloaded_delta: int
+        
+        Raises ValueError if start or end datetime does not have tzinfo set.
+        """
+        
+        # start, end should be UTC timestamps or 
+        # have tzinfo set to be converted to UTC.
+        def normalize_dt(dt: datetime, name: str) -> datetime:
+            if dt.tzinfo is None:
+                raise ValueError(f"Datetime '{name}' must have tzinfo set.")
+            return dt.astimezone(tz=timezone.utc)
+
+        start = normalize_dt(start, "start")
+        end = normalize_dt(end, "end")
+        
+        # Magical SQL query to compute deltas
+        TorrentStats = db_schemas.TorrentStats
+        Torrents = db_schemas.Torrents
+        fn = peewee.fn
+        
+        StartStats = TorrentStats.alias()
+        EndStats = TorrentStats.alias()
+        
+        boundary = (
+            TorrentStats
+            .select(
+                TorrentStats.torrent,
+                fn.MIN(TorrentStats.recorded_time).alias('min_ts'),
+                fn.MAX(TorrentStats.recorded_time).alias('max_ts')
+            )
+            .where(
+                (TorrentStats.recorded_time >= start) &
+                (TorrentStats.recorded_time <= end)
+            )
+            .group_by(TorrentStats.torrent)
+            .cte('boundary')
+        )
+        
+        query = (
+            Torrents
+            .select(
+                Torrents,
+                # deltas
+                (EndStats.uploaded_bytes - StartStats.uploaded_bytes).alias('uploaded_delta'),
+                (EndStats.downloaded_bytes - StartStats.downloaded_bytes).alias('downloaded_delta'),
+            )
+            # Torrents -> boundary
+            .join(boundary, on=(Torrents.id == boundary.c.torrent_id))
+            # boundary -> StartStats
+            .join(
+                StartStats,
+                on=(
+                    (StartStats.torrent == boundary.c.torrent_id) &
+                    (StartStats.recorded_time == boundary.c.min_ts)
+                )
+            )
+            # boundary -> EndStats
+            .join(
+                EndStats,
+                on=(
+                    (EndStats.torrent == boundary.c.torrent_id) &
+                    (EndStats.recorded_time == boundary.c.max_ts)
+                )
+            )
+            .with_cte(boundary)
+        )
+        
+        results = list(query)
+        return results
         
 
 

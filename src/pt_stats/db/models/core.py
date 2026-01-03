@@ -53,7 +53,7 @@ class TorrentStats(DatabaseModel):
     
     class Meta:
         indexes = (
-            (('torrent', 'recorded_time'), False),  # (torrent, recorded_time), not unique
+            (('torrent', 'recorded_time'), True),  # (torrent, recorded_time), unique
         )
 
 

@@ -17,7 +17,7 @@ dependencies = [
     "humanize>=4.15.0,<5", 
     "rich>=14.2.0,<15", 
     "apscheduler>=3.11.2,<4", 
-    "darkdetect>=0.8.0,<0.9",
+    "darkdetect>=0.8.0,<0.9", "pendulum>=3.1.0,<4",
 ]
 name = "pt-stats"
 requires-python = ">= 3.11"
