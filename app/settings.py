@@ -56,7 +56,10 @@ class AppSettings(Settings):
     
     filters: FilterSettings = SettingField(
         default_factory=lambda: FilterSettings(),
-        comment="Settings for filtering torrents."
+        comment=(
+            "Settings for filtering free torrents before they "
+            "are added."
+        )
     )
 
 
