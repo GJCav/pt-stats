@@ -110,18 +110,28 @@ def prune(
 @cli_setting.command()
 def template(
     no_comments: Annotated[bool, Parameter(name=["--no-comments", '-n'], help="Do not include comments in the generated template")] = False,
+    output: Annotated[str | None, Parameter(name=["--output", '-o'], help="Output file path")] = None,
     theme: Annotated[
         Literal['auto', 'dark', 'light'], 
         Parameter(name=["--theme", '-t'], help="Syntax highlighting theme to use")
     ] = "auto"
 ):
     """Generate the settings template to stdout."""
+    
+    template = AppSettings()
+    # Output to file if specified
+    if output:
+        with open(output, "w") as f:
+            template.to_yaml(f, fill_default_comments=not no_comments)
+        return
+    
+    # Output to stdout with syntax highlighting
     import io
     from rich.syntax import Syntax
     import darkdetect
     
     buf = io.StringIO()
-    AppSettings().to_yaml(buf, fill_default_comments=not no_comments)
+    template.to_yaml(buf, fill_default_comments=not no_comments)
     
     if theme == "auto":
         theme = "dark" if darkdetect.isDark() else "light"
