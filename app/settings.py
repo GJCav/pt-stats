@@ -62,18 +62,18 @@ class AppSettings(Settings):
 
 class DaemonSettings(Settings):
     add_free_torrent_interval_hours: float = SettingField(
-        default=1.0,
+        default=6.0,
         comment=(
             "Interval in hours between attempts to add new free torrents. "
-            "Default is 1.0 hour."
+            "Default is 6.0 hours."
         )
     )
     
     sample_stats_interval_minutes: float = SettingField(
-        default=10.0,
+        default=1.0,
         comment=(
             "Interval in minutes between sampling qBittorrent statistics. "
-            "Default is 10.0 minutes."
+            "Default is 1.0 minutes."
         )
     )
 
