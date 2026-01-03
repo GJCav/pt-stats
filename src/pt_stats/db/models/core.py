@@ -140,6 +140,7 @@ class TorrentsComputed(DatabaseModel):
     recorded_time = peewee.TimestampField(resolution=1, utc=True)
     
     # Handy fields
+    name = peewee.CharField()
     ratio = peewee.FloatField()
     popularity = peewee.FloatField()
     active_months = peewee.FloatField()
@@ -181,15 +182,20 @@ SELECT
     ls.id AS latest_stat_id,
     ls.recorded_time,
     
+    t.name as name,
+    
     -- Math Logic (Duplicated here for performance, to avoid calculating on discarded rows)
+    -- ratio
     CASE 
         WHEN ls.downloaded_bytes > 0 
         THEN CAST(ls.uploaded_bytes AS REAL) / ls.downloaded_bytes 
         ELSE 0 
     END AS ratio,
     
+    -- active_months
     (ls.recorded_time - t.added_time) / 2592000.0 AS active_months,
     
+    -- popularity
     CASE 
         WHEN (ls.recorded_time - t.added_time) > 0 
         THEN (
