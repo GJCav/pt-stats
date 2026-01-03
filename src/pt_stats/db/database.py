@@ -1,22 +1,32 @@
 import os
 import peewee
-from peewee import (
-    Model, SqliteDatabase, CompositeKey, DatabaseProxy,
-    Check
-)
+from peewee import SqliteDatabase, DatabaseProxy
 
-DB_PATH = os.getenv("DB_PATH") or "data/pt-stats.db"
+conn = DatabaseProxy()
 
-conn = SqliteDatabase(DB_PATH, pragmas={
-    'journal_mode': 'wal',
-})
-
-
-def connect():
-    if conn.is_closed():
-        conn.connect()
+def initialize(db_path: str | None = None):
+    if db_path is None:
+        db_path = ":memory:"
+    
+    if conn.obj is None:
+        conn.initialize(
+            SqliteDatabase(
+                db_path, 
+                pragmas={
+                    'journal_mode': 'wal',
+                },
+                timeout=30.0
+            )
+        )
+    else:
+        raise RuntimeError("Database connection is already initialized.")
 
 
 def close():
     if not conn.is_closed():
         conn.close()
+
+
+class DatabaseModel(peewee.Model):
+    class Meta:
+        database = conn
