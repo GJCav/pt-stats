@@ -65,7 +65,7 @@ def daemon(
     async def job_sample_stats():
         # print("\n=== Sampling Torrent Stats Job Started ===")
         # print(f"Time: {datetime.now().isoformat()}")
-        await app.qbt_sample_stats()
+        await app.qbt_sample_stats(quiet=True)
     
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
@@ -358,7 +358,7 @@ class App:
         raise TimeoutError(f"Failed to add torrent with hash {torrent_hash} within {timeout} seconds.")
 
     
-    async def qbt_sample_stats(self):
+    async def qbt_sample_stats(self, quiet: bool = False):
         """
         Sample torrent stats from qBittorrent and store them in the database.
         """
@@ -374,7 +374,10 @@ class App:
         
         batch_size = 32
         torrent_hashes = list(alive_torrents.keys())
-        for i in track(range(0, len(torrent_hashes), batch_size), description="Sampling torrent stats...", transient=True):
+        for i in (
+            (lambda x: x) if quiet else
+            (lambda x: track(x, description="Sampling torrent stats...", transient=True))
+        )(range(0, len(torrent_hashes), batch_size)):
             batch_hashes = torrent_hashes[i:i+batch_size]
             infos = self.qbt.torrents_info(torrent_hashes=batch_hashes)
             torrent_info_list.extend(infos)
