@@ -1007,8 +1007,8 @@ packages:
   requires_python: '>=3.6'
 - pypi: ./
   name: pt-stats
-  version: 0.2.2
-  sha256: fe43b454494f6b52887fb2a2abd0c793e7f4b15c4259631c6da3055ce66a4bb9
+  version: 0.3.0
+  sha256: 883365ab9b82f4f1a002a97e94f630d992e649451812e0c7c21e5bdd8ff2149a
   requires_dist:
   - fastapi>=0.127.1,<1
   - httpx>=0.28.1,<1

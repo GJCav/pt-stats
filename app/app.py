@@ -63,8 +63,8 @@ def daemon(
         await app.add_free_torrents(dry_run=dry_run)
         
     async def job_sample_stats():
-        print("\n=== Sampling Torrent Stats Job Started ===")
-        print(f"Time: {datetime.now().isoformat()}")
+        # print("\n=== Sampling Torrent Stats Job Started ===")
+        # print(f"Time: {datetime.now().isoformat()}")
         await app.qbt_sample_stats()
     
     scheduler = AsyncIOScheduler()
@@ -335,9 +335,7 @@ class App:
             for t in list(db_schemas.Torrents.select().where(
                 db_schemas.Torrents.delete_time.is_null()
             ))
-        }
-        print(f"Sampling stats for {len(alive_torrents)} alive torrents...")
-        
+        }        
         
         torrent_info_list: qbt_types.TorrentInfoList = [] # type: ignore
         sample_times = []
