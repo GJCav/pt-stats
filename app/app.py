@@ -188,7 +188,7 @@ def transfer(
             help="Number of days to look back for transfer calculation",
             group="Lookback"
         ),
-    ] = 1,
+    ] = 0,
     
     start: Annotated[
         datetime,
