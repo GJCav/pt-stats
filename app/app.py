@@ -527,7 +527,8 @@ class App:
         candidate_torrents = list(
             db_schemas.Torrents.select(
                 db_schemas.Torrents,
-                db_schemas.TorrentsComputed.popularity
+                db_schemas.TorrentsComputed.popularity,
+                db_schemas.TorrentsComputed.ratio,
             )
             .join(db_schemas.TorrentsComputed, attr='computed')
             .where(db_schemas.Torrents.delete_time.is_null())
@@ -559,7 +560,7 @@ class App:
             _acc += t.size_bytes
             table.add_row(
                 f"{t.computed.popularity:.1f}",
-                f"{(t.size_bytes / total_used * 100):.2f}%",
+                f"{t.computed.ratio:.1f}",
                 naturalsize(t.size_bytes),
                 naturalsize(_acc),
                 t.torrent_hash,
