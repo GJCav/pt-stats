@@ -421,7 +421,7 @@ class App:
                 continue
     
     
-    async def qbt_add_torrent_and_verify(self, *, torrent_meta_bytes: bytes, torrent_hash: str, name: str, timeout=5):
+    async def qbt_add_torrent_and_verify(self, *, torrent_meta_bytes: bytes, torrent_hash: str, name: str, timeout=20):
         """
         `client.torrents_add` returns `Ok` even for failed additions, so 
         we need to verify if the torrent was actually added.
