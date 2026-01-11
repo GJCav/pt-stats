@@ -1,0 +1,20 @@
+{
+    "servers": {
+        "git": {
+			"command": "/home/jcav-svr/.local/bin/uvx",
+			"args": [
+				"mcp-server-git"
+			],
+			"type": "stdio"
+		},
+		"filesystem": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"@modelcontextprotocol/server-filesystem",
+				"${workspaceFolder}"
+			],
+			"type": "stdio"
+		}
+    }
+}
