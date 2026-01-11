@@ -4,18 +4,19 @@ from peewee import SqliteDatabase, DatabaseProxy
 
 conn = DatabaseProxy()
 
+
 def initialize(db_path: str | None = None):
     if db_path is None:
         db_path = ":memory:"
-    
+
     if conn.obj is None:
         conn.initialize(
             SqliteDatabase(
-                db_path, 
+                db_path,
                 pragmas={
-                    'journal_mode': 'wal',
+                    "journal_mode": "wal",
                 },
-                timeout=30.0
+                timeout=30.0,
             )
         )
     else:

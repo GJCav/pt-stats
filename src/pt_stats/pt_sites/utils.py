@@ -4,6 +4,7 @@ from zoneinfo import ZoneInfo
 import attrs
 import time
 
+
 def localize2utc(dt: datetime) -> datetime:
     """
     Convert a datetime to UTC, assuming the input datetime is in local timezone if naive.
@@ -17,7 +18,7 @@ def localize2utc(dt: datetime) -> datetime:
 class Throttle:
     rate: float  # actions per second
     last_time: float = attrs.field(default=0.0)
-    
+
     async def __call__(self):
         now = time.monotonic()
         elapsed = now - self.last_time
