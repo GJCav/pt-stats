@@ -1,7 +1,7 @@
 {
     "servers": {
         "git": {
-			"command": "/home/jcav-svr/.local/bin/uvx",
+			"command": "uvx",
 			"args": [
 				"mcp-server-git"
 			],
