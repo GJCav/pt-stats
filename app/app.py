@@ -396,15 +396,20 @@ class App:
                 torrent_hash = torrent.infohash
                 
                 with db.conn.atomic() as txn:
-                    await self.qbt_add_torrent_and_verify(
-                        torrent_meta_bytes=torrent_meta, 
-                        torrent_hash=torrent_hash, 
-                        # qBittorrent may get a different name from the .torrent
-                        # file, so we use the original name here.
-                        name=t.name
-                    )
+                    try:
+                        await self.qbt_add_torrent_and_verify(
+                            torrent_meta_bytes=torrent_meta, 
+                            torrent_hash=torrent_hash, 
+                            # qBittorrent may get a different name from the .torrent
+                            # file, so we use the original name here.
+                            name=t.name
+                        )
+                    except TimeoutError as e:
+                        print(str(e))
+                        print("The torrent adding may succeeded, but verification timeout, treating as success.")
+                    
                     # Record in database
-                    db_schemas.Torrents.create(
+                    torrent_in_db = db_schemas.Torrents.create(
                         torrent_hash=torrent_hash,
                         name=t.name,
                         site=self.site_mteam,
@@ -414,6 +419,19 @@ class App:
                         url="/detail/" + t.sitewise_id, 
                         size_bytes=t.size,
                     )
+                    
+                    # Also create an inital stats record
+                    db_schemas.TorrentStats.create(
+                        torrent=torrent_in_db,
+                        recorded_time=utc_now(),
+                        connected_seeders=0,
+                        swarm_seeders=t.seeders,
+                        connected_leechers=0,
+                        swarm_leechers=t.leechers,
+                        uploaded_bytes=0,
+                        downloaded_bytes=0
+                    )
+                    
                     # print(f"Succeed. Record ID: {record.record_id}")
                 
             except Exception as e:
