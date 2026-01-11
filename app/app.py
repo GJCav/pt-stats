@@ -21,8 +21,12 @@ from rich.console import Console
 from rich.progress import track
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import pendulum
+import importlib.metadata
 
-cli = CliApp("pt-stats")
+cli = CliApp(
+    "pt-stats",
+    version=importlib.metadata.version("pt-stats")
+)
 
 cli_setting = CliApp("settings", help="Manage application settings")
 cli.command(cli_setting)
