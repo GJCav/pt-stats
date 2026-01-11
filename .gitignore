@@ -3,6 +3,8 @@
 .env
 
 *.db
+*.db-shm
+*.db-wal
 
 # pixi environments
 .pixi/*
