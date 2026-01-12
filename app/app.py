@@ -605,7 +605,7 @@ class App:
 
             accumulated_freed += t.size_bytes
 
-        to_prune = candidate_torrents[: idx + 1]
+        to_prune = candidate_torrents[: idx]
 
         print(
             f"The following {len(to_prune)} torrents will be pruned to free up {naturalsize(accumulated_freed)}:"
